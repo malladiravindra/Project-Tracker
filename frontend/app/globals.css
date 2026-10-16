@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f3f5f9;
+  --surface: #ffffff;
+  --border: #e2e6ee;
+  --text: #111827;
+  --muted: #5b6475;
+  --header: #0f1f3d;
+  --track: #e3e7ee;
+  --accent: #e0a526;
+
+  --red: #d63a40;
+  --red-strong: #9b2335;
+  --amber: #f5b01a;
+  --green: #17a02e;
+  --blue: #2f6fd6;
+  --purple: #7b2fb5;
+  --orange: #e8730c;
+  --orange-strong: #b4530a;
+  --amber-strong: #9a6a00;
+  --slate: #5a6f80;
+}
+
+.dark {
+  --bg: #0b1220;
+  --surface: #131c2e;
+  --border: #25314a;
+  --text: #e6eaf2;
+  --muted: #98a2b6;
+  --header: #070e1c;
+  --track: #26324a;
+
+  --red: #f0676c;
+  --red-strong: #f58a8f;
+  --amber: #f7c14d;
+  --green: #4cc765;
+  --blue: #6c9cf0;
+  --purple: #b57de6;
+  --orange: #f59a4c;
+  --orange-strong: #f7a865;
+  --amber-strong: #f7c14d;
+  --slate: #9fb2c2;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-line: var(--border);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-header: var(--header);
+  --color-track: var(--track);
+  --color-accent: var(--accent);
+  --color-st-red: var(--red);
+  --color-st-red-strong: var(--red-strong);
+  --color-st-amber: var(--amber);
+  --color-st-green: var(--green);
+  --color-st-blue: var(--blue);
+  --color-st-purple: var(--purple);
+  --color-st-orange: var(--orange);
+  --color-st-orange-strong: var(--orange-strong);
+  --color-st-amber-strong: var(--amber-strong);
+  --color-st-slate: var(--slate);
+  --breakpoint-desk: 73.75rem; /* 1180px: wide enough for one-row toolbars at 125–150% zoom */
+  --font-sans: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Whole-dashboard scale, like zooming the browser out a step. Change this one value to resize everything. */
+:root {
+  --ui-scale: 0.9;
+}
+html {
+  zoom: var(--ui-scale);
+  background: var(--bg);
+  /* Keep scroll targets clear of the pinned header (its height is set by components/Header.tsx). */
+  scroll-padding-top: calc(var(--header-h, 0px) + 12px);
+}
+@media print {
+  html {
+    zoom: 1;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Native colour input shown as a plain swatch (used by the Alert colors panel). */
+.color-swatch {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+}
+.color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.color-swatch::-webkit-color-swatch {
+  border: 0;
+  border-radius: 4px;
+}
+.color-swatch::-moz-color-swatch {
+  border: 0;
+  border-radius: 4px;
+}
+
+/* Printing the Weekly brief: show only the brief, as a plain document. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .brief-print-root,
+  .brief-print-root * {
+    visibility: visible;
+  }
+  body {
+    background: #fff;
+  }
+  .brief-print-root {
+    position: absolute;
+    inset: 0 auto auto 0;
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: none;
+  }
+}
+
+/* Tailwind v4 resets buttons to the default arrow; give every interactive control the hand cursor. */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  a[href],
+  select:not(:disabled),
+  summary,
+  label:has(> input[type="checkbox"]),
+  input[type="checkbox"]:not(:disabled),
+  input[type="color"],
+  input[type="range"],
+  input[type="date"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Shared hover for clickable cards: slight lift, stronger shadow, tinted border. */
+@utility card-hover {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease;
+  cursor: pointer;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 6px 16px -4px rgb(15 31 61 / 0.14),
+      0 2px 6px -2px rgb(15 31 61 / 0.08);
+    border-color: color-mix(in srgb, var(--blue) 35%, var(--border));
+  }
+  &:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+/* Short-lived confirmation toast (e.g. after Refresh): visible, then fades out on its own. */
+@keyframes toast-life {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  6%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+    visibility: hidden;
+  }
+}
+.toast-life {
+  animation: toast-life 3.2s ease forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-life {
+    animation-timing-function: steps(1, end);
+  }
+}

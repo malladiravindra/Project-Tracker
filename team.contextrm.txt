@@ -1,0 +1,324 @@
+PROJECT TRACKER - TEAM CONTEXT
+================================================================================
+Generated: 15 October 2026 (from Git history, repository documents and the test/verification runs listed below).
+Scope: Project Tracker only. No EduVault material exists in this repository (searched) and none is included.
+Evidence rule: every date below comes from a Git commit timestamp (all times IST, +0530) or a dated section of
+empty.txt. Work that left no commit or dated document is labelled "no commit evidence" or "unknown". Nothing here
+is inferred beyond the evidence cited. Browser testing is claimed ONLY where empty.txt itself records it.
+
+--------------------------------------------------------------------------------
+1. PROJECT OVERVIEW AND TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+Project Tracker is an executive dashboard for projects, tasks, deadlines and team workload.
+Tabs: Overview, Tasks & Deadlines, Projects, Team. Extras: Weekly Brief, Global Search, Decision History,
+Daily Work Updates, Activity feed, light/dark theme.
+
+Frontend : Next.js 16.4.0 (Turbopack, Cache Components), React 19.3.0, TypeScript, Tailwind CSS 4, ESLint 9.
+           Tests: Node built-in test runner (frontend/tests/*.test.mjs).
+Backend  : Python 3.14.4 (as run here), Django 5.2.x (requirements: >=5.2,<5.3), Django REST Framework >=3.16,
+           django-cors-headers >=4.7. APIView + explicit path() routing only. SQLite (backend/db.sqlite3, git-ignored).
+           Optional PostgreSQL settings exist (PostgreSQL-only concurrency tests are skipped on SQLite).
+Repository : https://github.com/guravaiahnaidu/Project_Tracker.git
+Working branch : backend-integration (tracks origin/backend-integration)
+Other branches : main (local fdfec08; origin/main ce57afa), backup/backend-integration-pre-guru-sync (7bf5ccf, local only)
+Time zone : server decides "today" (DJANGO_TIME_ZONE, default Asia/Kolkata); the frontend follows the server clock.
+
+--------------------------------------------------------------------------------
+2. FOLDER STRUCTURE AND IMPORTANT MODULES
+--------------------------------------------------------------------------------
+Project_Tracker/
+  README.md              run instructions, API overview, security status
+  empty.txt              ~1,870-line audit + backend specification + verification reports (dated 13-14 Oct 2026)
+  GURU_BRANCH_CHANGES.md change report for Guru's two commits (created 15 Oct 2026, untracked)
+  team.context.txt       this file (untracked)
+  backend/
+    config/    settings, urls, asgi, wsgi only
+    common/    shared infrastructure: exceptions (JSON error envelope), params, limits, throttling, error views
+    members/   Member model, serializers, views (CRUD, membership sync), admin
+    projects/  Project, ProjectMember, ProjectObjective, DecisionRecord; rules (health, offsets); views
+    tasks/     Task model; rules (grouping/sorting), queries (filters), views
+    updates/   DailyUpdate, Feedback; tasklink.py (tasks -> daily updates)
+    activity/  ActivityLog; services.log(); signals.py (history purge on delete)
+    dashboard/ computed summary, attention, key-dates, team-workload, decisions, weekly brief
+    tests/     API audit tests, input validation, reliability, settings, PostgreSQL concurrency
+  frontend/
+    app/       layout, page, globals.css
+    components/ Dashboard, Header, Overview, TasksView, TaskEditor, ProjectsView, Views (Team + EmployeeForm),
+               WeeklyBrief, DailyUpdates, DecisionHistory, GlobalSearch, RefreshButton, FormControls, ui, hooks
+    lib/       api.ts (REST client), store.ts (state + scoped refetch), data.ts (types + derived rules),
+               dailyUpdates.ts, decisions.ts, refresh.ts
+    tests/     serverClock, blockedNote, activityMerge (24 tests)
+Database models (9): Member, Project, ProjectMember, ProjectObjective, DecisionRecord, Task, DailyUpdate, Feedback,
+ActivityLog. Migrations: members 2, projects 7, tasks 2, activity 1, updates 3 (plus Django built-ins).
+API base: /api/ (members, projects, tasks, activity, daily-updates, dashboard/*, decision-history, today, weekly-brief).
+Errors are JSON: {"error": {"code", "message", "fields"}}.
+
+--------------------------------------------------------------------------------
+3. DEVELOPMENT PROCESS SUMMARY (from the beginning)
+--------------------------------------------------------------------------------
+Phase 1 (12-13 Oct)  Frontend only. Guru created the Next.js app and built the dashboard UI with hard-coded sample
+                     data (first commit, then "new features": daily updates, decision history, global search, refresh).
+Phase 2 (13 Oct)     Malladi Ravindra's commit 15cd618 added the Django REST backend (members, projects, tasks,
+                     activity, dashboard), reorganised the repo into frontend/ and backend/, replaced mock data with an
+                     API client + store, added input validation, production-safe settings, the first test suites and
+                     the audit document empty.txt (Parts A-D: audit, backend record, full audit, fixes).
+Phase 3 (14 Oct)     Commit 8c8537a added decision records, the updates app (daily updates + feedback), throttling,
+                     409/500 JSON handling, endpoint-by-endpoint API audit tests and the API verification report.
+                     Commit 764b5bf moved routes to /api/ and shared code to common/ and tests/.
+                     Guru added the employee edit form (ad3bea3); a Django-admin commit "dj" (7bf5ccf) followed;
+                     Guru then pushed two feature commits (fb789fe, f9e2a35).
+Phase 4 (15 Oct)    Sync of Guru's commits into backend-integration, change report, migrations, tests, builds,
+                     local run and an API smoke test (details in section 4).
+Note on authorship: commits 15cd618, 8c8537a, 4a88b31, 764b5bf and 7bf5ccf are authored under the git user
+"Malladi Ravindra"; each commit message carries a "Co-Authored-By: Claude Sonnet 5.5" trailer (AI-assisted).
+Guru's commit f9e2a35 carries "Co-Authored-By: Claude Opus 5.5". fb789fe and the earlier Guru commits have no
+trailer.
+
+--------------------------------------------------------------------------------
+4. DATE-WISE DAILY WORK STATUS
+--------------------------------------------------------------------------------
+Reporting period: first commit 12 Oct 2026 through 15 Oct 2026. Days with no commit are not listed; whether
+unrecorded work happened on them is UNKNOWN.
+
+=== 12 October 2026 (Mon) ===
+Evidence: commit 98bfe0c (Guru, 16:30) only. No commit by Malladi Ravindra.
+ 1. Work completed : repository initialised from Create Next App (17 files: app/, config files, package-lock).
+ 2. Features/modules: none (template).
+ 3. Bugs/fixes     : none.
+ 4. Integration    : none (no backend exists).
+ 5. Testing        : none recorded.
+ 6. Remaining      : build the dashboard UI.
+
+=== 13 October 2026 (Tue) ===
+Evidence: commits fdfec08 (Guru 15:01), ce57afa (Guru 17:24), 15cd618 (Malladi Ravindra 18:01); empty.txt Parts A-D dated 2026-10-13.
+ 1. Work completed (Guru): 15:01 "first commit" - dashboard UI: Dashboard, Header, Overview, ProjectsView, TasksView,
+    TaskEditor, Views (Team), WeeklyBrief, hooks, ui, lib/data.ts with hard-coded sample data (4,101 insertions).
+    17:24 "new features" - DailyUpdates, DecisionHistory, GlobalSearch, RefreshButton, lib/dailyUpdates.ts,
+    lib/decisions.ts, lib/refresh.ts (1,907 insertions). Both were built on mock data (no API).
+ 2. Work completed (Malladi Ravindra), commit 15cd618 at 18:01 (109 files, +7,428/-865):
+    - Frontend audit and backend requirements specification (empty.txt Part A, audit date 2026-10-13).
+    - Django 5.2 + DRF backend with members, projects, tasks, activity and dashboard apps; models, migrations,
+      CRUD endpoints, dashboard aggregates, weekly brief, today endpoint.
+    - Strict input validation, JSON error envelope, production-safe settings (refuse to start without secrets/hosts/CORS).
+    - Frontend moved into frontend/, mock data replaced by lib/api.ts + lib/store.ts; server-timezone clock,
+      blocked-task note dialog, paged activity, scoped refetching, Node unit tests.
+    - Not included: Guru's ce57afa features (per the commit message they were built on the old mock-data layout and
+      "need to be ported onto the API separately" - the 14 Oct commit below does that).
+ 3. Bugs/fixes (empty.txt Part C/D, 13 Oct): audit findings and their fixes were recorded; Part D lists the fix pass.
+ 4. Testing recorded in empty.txt: backend 71 tests OK after the build; 123 tests OK after the fixes (adds input
+    validation, settings, date/midnight tests); a 30-check live API smoke run (30/30) on a temporary database;
+    tsc exit 0, lint clean, next build succeeded; frontend node tests 24/24; a store/API harness run (68 passed).
+    empty.txt also records an earlier browser run (30 checks, isolated database); that is the document's claim, it was
+    not re-verified here.
+ 5. Remaining (as recorded): no authentication (product decision); no UI for deleting projects/members/objectives.
+
+=== 14 October 2026 (Wed) ===
+Evidence: commits 8c8537a (10:32), 4a88b31 (10:37), 764b5bf (11:05), ad3bea3 (Guru 11:18), 7bf5ccf (15:36),
+fb789fe (Guru 15:42); empty.txt "UPDATE 2026-10-14", second-pass audit, API verification report.
+ 1. Work completed (Malladi Ravindra):
+    - 10:32 8c8537a "Integrate Project Tracker frontend and backend APIs" (67 files, +5,119/-154): decision records
+      (resolve/undo, history with filters/paging), new updates app (daily updates + manager feedback: create, list,
+      detail, partial update, mark reviewed), restored API data layer, wired Daily Updates, Decision History,
+      Global Search and Refresh to the backend (this ports Guru's ce57afa features onto the API), "load more" paging.
+    - 10:37 4a88b31: frontend README added.
+    - 11:05 764b5bf: APIs moved to /api/, shared infrastructure to common/, tests to tests/, HTML 404 for non-API URLs,
+      frontend base URL changed to /api, routes documented in empty.txt.
+    - 15:36 7bf5ccf "dj": Django admin customisation for activity, members, projects, tasks (admin.py files) and a
+      small lib/api.ts change. (Commit message is only "dj"; description is taken from the changed files.)
+ 2. Features/modules: decision records, daily updates + feedback, throttling (429 + Retry-After), partial-field PATCH
+    saves, row locks on resolve/undo/feedback, optional PostgreSQL settings, DB indexes.
+ 3. Bugs found and fixed (empty.txt second-pass audit):
+    - SECURITY (medium): feedback endpoint accepted a client-supplied manager_name (impersonation) -> field removed,
+      actor set server-side.
+    - Failed "mark reviewed" was swallowed -> now shows the server error with Retry.
+    - Missing row locks on resolve/undo/feedback -> select_for_update added.
+    - Unbounded list endpoints -> limit/offset paging + indexes.
+    - GET /members/?show|sort=bogus and GET /tasks/?priority=bogus returned 200 -> now 400.
+    - Progress slider dropped a rapid second step -> fixed.
+ 4. Guru: 11:18 ad3bea3 "edit employee form" (10 files, +683/-60): members migration 0002 (contact + status), new
+    member fields/serializer rules/tests, and a large EmployeeForm rewrite in Views.tsx. 15:42 fb789fe "Update
+    frontend and backend functionality" (19 files, +1,643/-204): commit message has no detail; its file-level
+    changes are covered together with f9e2a35 in GURU_BRANCH_CHANGES.md (see section 6).
+ 5. Testing recorded (empty.txt): 168 tests, 0 failures (394 recorded API probes, 0 failed) on 14 Oct; 190 tests with
+    5 PostgreSQL-only skipped after the routing change. makemigrations --check clean. A read-only live smoke test of
+    the dev server (GET/OPTIONS) and a CORS preflight returned 200. Frontend tests were not re-run in the audit pass
+    itself (no frontend files changed in that pass).
+ 6. Remaining (as recorded): no authentication; no UI for employees to submit daily updates; run `migrate` on existing DBs.
+
+=== 15 October 2026 (Thu) ===
+Evidence: commit f9e2a35 (Guru, 16:49); work done in this working session (no commits by Malladi Ravindra today).
+ 1. Guru, f9e2a35 16:49 (43 files, +1,542/-429): work dates on tasks; optional task due date; Critical priority;
+    tasks feed Daily Work Updates; projects get client + priority, optional lead/start/deadline, new statuses
+    (Planning, Under Testing, No Updates, Cancelled); project status summary cards; "Department" shown as "Domain";
+    global search matches client; deleting a project/task purges its history and leaves one "You deleted..." line;
+    employee membership editing via PATCH; sticky/mobile header; shared form controls. 6 new migrations.
+ 2. Malladi Ravindra (this session, uncommitted):
+    - Inspected the remote read-only (fetch, branch list, diff) and confirmed local was 0 ahead / 2 behind.
+    - Wrote GURU_BRANCH_CHANGES.md (change report; backend diffs read in full, large frontend components summarised).
+    - Created backup branch backup/backend-integration-pre-guru-sync at 7bf5ccf, then ran
+      `git merge --ff-only origin/backend-integration` (fast-forward, no merge commit, nothing pushed).
+    - Copied backend/db.sqlite3 to a scratch location, then applied the 6 pending migrations.
+ 3. Testing/verification run today (results in section 7): migrate OK; makemigrations --check clean; backend 221 tests
+    OK (5 skipped); tsc clean; eslint clean; frontend node tests 24/24; next build succeeded.
+ 4. Local run + API smoke test: started Django (127.0.0.1:8000) and Next dev (localhost:3000); frontend returned 200.
+    Using the HTTP API on the empty database (throw-away records, deleted afterwards) verified: project with no lead
+    or dates, task with a past work date, daily update auto-created and merged, work_from/work_to filter, lead
+    protection on membership edit, task deletion removing the daily update and leaving one deleted line.
+    NOT done: no browser (UI) testing was performed on 15 Oct; step-by-step browser tests were prepared for the user.
+ 5. Code review findings (section 8): 500 error on malformed membership PATCH, Planning default overriding derived
+    status, past work date counted as overdue, stale preview in TaskEditor.
+ 6. Remaining: run the browser tests, fix the findings in section 8, commit when ready (nothing is committed).
+
+--------------------------------------------------------------------------------
+4A. MY WORK ONLY - DAY BY DAY (Malladi Ravindra; Guru's work excluded)
+--------------------------------------------------------------------------------
+Source: commits under the Malladi Ravindra git identity, dated sections of empty.txt, and the 15 Oct session.
+No commits by me on 12 Oct.
+
+13 Oct 2026 (commit 15cd618, 18:01)
+ - Audited the frontend and wrote the backend requirements specification (empty.txt).
+ - Built the Django REST backend: members, projects, tasks, activity, dashboard apps; models, migrations, CRUD APIs,
+   dashboard summary, weekly brief and today endpoints.
+ - Added strict input validation, a JSON error format and production-safe settings.
+ - Moved the app into frontend/ and backend/; replaced sample data with the API client and store; added server-time
+   handling, blocked-task note dialog and paged activity.
+ - Fixed the audit findings; tests grew from 71 to 123 (all passing, as recorded in empty.txt); tsc, lint and build clean.
+
+14 Oct 2026 (commits 8c8537a 10:32, 4a88b31 10:37, 764b5bf 11:05, 7bf5ccf 15:36)
+ - Added decision records (resolve/undo, history) and the updates app (daily updates + manager feedback) to the backend.
+ - Connected Daily Updates, Decision History, Global Search and Refresh screens to the API; added "Load more" paging.
+ - Added request throttling, conflict (409) and server-error (500) JSON handling, row locks and database indexes.
+ - Fixed: manager-name impersonation on feedback; silent "mark reviewed" failure; unbounded lists; invalid filter
+   values returning 200; progress slider dropping a step.
+ - Wrote the endpoint-by-endpoint API audit tests and verification report: 168 tests passed (394 probes, none failed).
+ - Moved all APIs to /api/, shared code to common/ and tests to tests/ (190 tests, 5 PostgreSQL-only skipped).
+ - Added the frontend README and Django admin customisation (commit "dj").
+
+15 Oct 2026 (no commits; session work, uncommitted)
+ - Checked Guru's two new commits against my branch, wrote GURU_BRANCH_CHANGES.md, made the backup branch and
+   fast-forwarded backend-integration to f9e2a35.
+ - Applied 6 migrations; verified: 221 backend tests OK (5 skipped), tsc, lint, 24 frontend tests and the build all clean.
+ - Ran both servers locally and tested the main flows through the API. Browser testing not yet done.
+ - Reviewed the new code and found: 500 error on a malformed team-assignment request, Planning default overriding the
+   derived status, past work dates counted as overdue, stale preview in the task editor (none fixed yet).
+ - Wrote team.context.txt.
+
+--------------------------------------------------------------------------------
+5. GIT HISTORY AND SYNCHRONISATION DETAILS
+--------------------------------------------------------------------------------
+Commits, oldest first (author / IST time / hash / message):
+ Guru             12 Oct 16:30  98bfe0c  Initial commit from Create Next App
+ Guru             13 Oct 15:01  fdfec08  first commit                         <- local main
+ Guru             13 Oct 17:24  ce57afa  new features                         <- origin/main
+ Malladi Ravindra 13 Oct 18:01  15cd618  Add Django REST backend, integrate frontend with the API, move apps into frontend/ and backend/
+ Malladi Ravindra 14 Oct 10:32  8c8537a  Integrate Project Tracker frontend and backend APIs
+ Malladi Ravindra 14 Oct 10:37  4a88b31  Add frontend README
+ Malladi Ravindra 14 Oct 11:05  764b5bf  Improve API routing and reorganize backend infrastructure
+ Guru             14 Oct 11:18  ad3bea3  edit employee form
+ Malladi Ravindra 14 Oct 15:36  7bf5ccf  dj                                   <- backup branch
+ Guru             14 Oct 15:42  fb789fe  Update frontend and backend functionality
+ Guru             15 Oct 16:49  f9e2a35  Add work dates, project status cards and optional project fields   <- HEAD
+Synchronisation (15 Oct): local backend-integration was at 7bf5ccf, 0 ahead / 2 behind origin/backend-integration.
+ Backup branch created at 7bf5ccf, then fast-forwarded to f9e2a35 (only fb789fe and f9e2a35 were brought in).
+ origin/main (ce57afa) was NOT merged. No commits, pushes, resets or force operations were made.
+ Observation: 15cd618 (13 Oct, 18:01) postdates ce57afa; the integration of ce57afa's features happened in 8c8537a.
+ Observation: ad3bea3 is authored by Guru but was already in the local history before the 15 Oct sync.
+
+--------------------------------------------------------------------------------
+6. FEATURES BY CONTRIBUTOR (based on commit authorship only)
+--------------------------------------------------------------------------------
+Authored under Malladi Ravindra's git identity (AI-assisted per commit trailers): Django backend and all its apps,
+ API client/store layer, input validation, error envelope, throttling, settings hardening, decision records,
+ daily updates + feedback endpoints, API routing (/api/), common/ and tests/ reorganisation, API audit test suites,
+ Django admin customisation, empty.txt audit/spec/verification reports, README.
+Authored by Guru: original dashboard UI and sample-data model (12-13 Oct); Daily Updates, Decision History, Global
+ Search and Refresh UI (13 Oct); employee edit form + member contact/status fields (14 Oct); fb789fe (14 Oct) and
+ f9e2a35 (15 Oct): work dates, optional due date, Critical priority, tasks->daily updates (tasklink.py), project
+ client/priority/optional lead & dates, new statuses, status cards, activity purge signals, membership sync on
+ member PATCH, header/mobile work, FormControls, ConfirmDialog. Full file-by-file detail: GURU_BRANCH_CHANGES.md.
+Caveat: commit authorship shows who committed, not who wrote each line (AI co-author trailers exist on both sides).
+
+--------------------------------------------------------------------------------
+7. TEST AND VERIFICATION RESULTS
+--------------------------------------------------------------------------------
+Backend test count over time (from empty.txt and runs):
+  71 (13 Oct, after backend build) -> 123 (13 Oct, after fixes) -> 168 (14 Oct audit) -> 190, 5 skipped (14 Oct after
+  routing change) -> 221, 5 skipped (15 Oct, run after Guru sync).
+Run on 15 Oct 2026 after the fast-forward (actual output):
+  python manage.py migrate                    6 migrations applied: projects 0004-0007, tasks 0002, updates 0003 - OK
+  python manage.py makemigrations --check     "No changes detected"
+  python manage.py test                       Ran 221 tests, OK (skipped=5; the 5 are PostgreSQL-only concurrency tests)
+  npx tsc --noEmit                            no errors
+  npm run lint (eslint)                       no output / no errors
+  npm test (node --test)                      24 tests, 24 pass, 0 fail
+  npm run build (Next 16.4.0)                 compiled successfully; / and /_not-found prerendered
+  Dev servers                                 Django on 127.0.0.1:8000 and Next on localhost:3000 started; GET / = 200
+  API smoke test (HTTP, throw-away data)      see section 4, 15 Oct item 4; test records removed afterwards
+Not performed on 15 Oct: browser/UI testing, load testing, production deployment, PostgreSQL run, authentication tests.
+No production deployment is evidenced anywhere in the repository.
+
+--------------------------------------------------------------------------------
+8. KNOWN BUGS, SECURITY CONCERNS, TECHNICAL DEBT, PENDING WORK
+--------------------------------------------------------------------------------
+Bugs / risks found 15 Oct (reported, NOT fixed):
+ B1. PATCH /api/members/<id>/ with a membership item lacking project_id returns HTTP 500 (KeyError 'project' at
+     backend/members/serializers.py validate_memberships, line ~117). UI always sends project_id so it is not
+     reachable from the browser. Fix: use item.get("project") and raise a validation error.
+ B2. New Project form defaults status to "Planning" and always sends phase (ProjectsView.tsx ~330, ~452), bypassing the
+     server's derivation from the start date.
+ B3. A task with a past work date and no due date is grouped as "overdue" ("Work date N days ago"); confirm intent.
+ B4. TaskEditor preview uses a stale workOffset until saved (display only).
+ B5. Behaviour change: a manual daily-update share for a person/project/day that already has an auto-created update
+     returns 409 "already exists".
+Security:
+ S1. NO AUTHENTICATION OR AUTHORISATION: DRF default permission AllowAny; every endpoint including delete is open
+     (documented in README and empty.txt). Do not expose publicly. Production start-up requires
+     DJANGO_ACKNOWLEDGE_NO_AUTH=true.
+ S2. Manager identity is a fixed server label ("Manager"); no real user model.
+ S3. /admin/ is enabled (admin classes were customised in 7bf5ccf); empty.txt recommended removing it if unused.
+ S4. Python dependencies are not pinned (ranges only); npm audit findings not reviewed.
+Technical debt:
+ T1. README.md still says the API is under /api/v1/ (lines 11 and 46) - routes are now /api/. frontend/.env.local.example
+     is already /api. empty.txt earlier sections also still mention /api/v1.
+ T2. README does not document Guru's work-date / optional-field features or the 6 new migrations.
+ T3. Migration 0004 and updates 0003 were generated with Django 5.2.18, 0005-0007 with 5.1.6 (installed: 5.2.17).
+ T4. Large frontend components (ProjectsView 1,353 lines, TasksView 1,180, Views 1,097) mix form logic and display.
+ T5. Reads are hand-written dict builders, not DRF output serializers.
+ T6. Frontend has only 24 unit tests (clock, blocked note, activity merge); no component or end-to-end tests; no CI.
+ T7. Deleting tasks/projects purges activity history by design; no soft delete or undo.
+Pending (from empty.txt and this review): authentication/roles decision; UI for employees to submit daily updates;
+ UI for deleting objectives; concurrency behaviour only provable on PostgreSQL (SQLite serialises writes).
+
+--------------------------------------------------------------------------------
+9. NEXT STEPS FOR CONTINUING DEVELOPMENT
+--------------------------------------------------------------------------------
+ 1. Run the browser test plan (add employees; project with no lead/dates; task with a past work date; daily updates;
+    status cards; employee assignment edit; task delete) and note any UI defects.
+ 2. Fix B1 (500 on malformed memberships), decide B2/B3, then add regression tests for each.
+ 3. Update README (/api path, new features, migrations) and keep empty.txt as the audit record.
+ 4. Commit the report files only if the team wants them in Git (currently untracked: GURU_BRANCH_CHANGES.md,
+    team.context.txt). Nothing has been committed or pushed since the sync.
+ 5. Decide and design authentication/authorisation before any shared or public deployment.
+ 6. Add CI (lint, tsc, build, backend tests) and frontend component/E2E tests; pin Python dependencies.
+ 7. Agree with Guru on a branch workflow; main (origin ce57afa) is far behind backend-integration (f9e2a35).
+
+--------------------------------------------------------------------------------
+10. CURRENT GIT AND DATABASE STATE (15 Oct 2026)
+--------------------------------------------------------------------------------
+ Branch: backend-integration at f9e2a35, identical to origin/backend-integration.
+ Untracked files: GURU_BRANCH_CHANGES.md, team.context.txt. No staged or modified tracked files.
+ Backup branch: backup/backend-integration-pre-guru-sync (7bf5ccf), local only.
+ Database backend/db.sqlite3 (git-ignored): all migrations applied; business tables empty (smoke-test records removed).
+ A pre-migration copy of the database was kept in the session scratch directory (not in the repository).
+
+--------------------------------------------------------------------------------
+11. SOURCES REVIEWED AND GAPS
+--------------------------------------------------------------------------------
+Sources: git log --all (11 commits, with stats and messages), branch list, README.md, frontend/README.md, empty.txt
+(headings, test and audit sections), GURU_BRANCH_CHANGES.md, backend/requirements.txt, frontend/package.json,
+backend/.env.example (keys only), model and migration listings, and the test/build runs listed in section 7.
+Gaps: (a) no commits exist for 15 Oct by Malladi Ravindra; work that day is from this session only; (b) the actual
+dates for work between commits (e.g. whether the 13 Oct audit happened before or after backend coding) are only
+as precise as the empty.txt section dates; (c) the content of fb789fe was not described in its message; (d) the
+browser tests recorded in empty.txt were not independently re-verified; (e) hours worked are not recorded anywhere;
+(f) "dj" commit purpose is inferred from its changed files; (g) no CI logs, issue tracker or chat history were available.
