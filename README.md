@@ -10,6 +10,25 @@ An executive dashboard for projects, tasks, deadlines and team workload.
 
 The two apps run separately. The frontend talks to the backend only through the REST API under `/api/v1/`.
 
+## Requirements, database setup and the first administrator
+
+- Python 3.12+ (tested on 3.14), Node.js 20+ (tested on 24) with npm 10+. Install with `pip install -r backend/requirements.txt` and `npm install` in `frontend/`.
+- Database: SQLite by default (`backend/db.sqlite3`, local only). Set `DATABASE_URL` (PostgreSQL, e.g. Neon) in `backend/.env` to use a real server. Credentials come only from the environment; see `backend/.env.example`.
+- Create or update tables: `python manage.py migrate` (run from `backend/`). `python manage.py makemigrations --check` should report no changes.
+- Create the first administrator (idempotent; the password is stored as a salted PBKDF2 hash and never printed):
+
+  ```bash
+  # Option 1: prompt for the password (hidden)
+  python manage.py ensure_admin --username <admin-username>
+  # Option 2: from the environment (placeholders; choose your own values)
+  INITIAL_ADMIN_USERNAME=<admin-username> INITIAL_ADMIN_PASSWORD=<strong-password> python manage.py ensure_admin
+  ```
+
+  If the username already exists nothing is changed. `--reset-password` replaces only that account's password. Change any initial password before a production deployment. Django superusers always have the Admin role.
+- All data (members, projects, tasks, decisions, daily updates, activity) is stored by the Django API in the configured database; the frontend keeps only the sign-in tokens in `sessionStorage` and the theme in `localStorage`.
+- Tests: `python manage.py test` (backend, from `backend/`; set `DJANGO_DOTENV_FILE=/nonexistent` to force the throwaway SQLite test setup instead of your `.env` database), and in `frontend/`: `npm test`, `npm run lint`, `npx tsc --noEmit`, and `NEXT_PUBLIC_API_URL=<api url> npm run build` (the production build requires that variable).
+- Known limitation: `npm install` prints an ESLint 9 deprecation notice. ESLint 9 is in maintenance; ESLint 10 is blocked until `eslint-plugin-react`, `-jsx-a11y` and `-import` (pulled in by `eslint-config-next`) declare support for it.
+
 ## Run the backend (http://127.0.0.1:8000)
 
 ```bash
