@@ -38,6 +38,16 @@ def _env_list(name: str, default: str = "") -> list[str]:
     return [v.strip() for v in os.environ.get(name, default).split(",") if v.strip()]
 
 
+def _origin(value: str) -> str:
+    """Reduce a pasted URL ("https://app.example.org/login") to its exact origin ("https://app.example.org").
+
+    Browsers send the Origin header as scheme://host[:port] with no path or trailing slash, so a value that keeps
+    either never matches and CORS silently fails. Values without a scheme are returned unchanged for the checks below.
+    """
+    parsed = urlparse(value)
+    return f"{parsed.scheme}://{parsed.netloc}" if parsed.scheme and parsed.netloc else value.rstrip("/")
+
+
 def _env_bool(name: str, default: bool) -> bool:
     raw = os.environ.get(name)
     return default if raw is None else raw.strip().lower() in ("1", "true", "yes", "on")
@@ -90,7 +100,8 @@ JWT_SIGNING_KEY = os.environ.get("JWT_SIGNING_KEY", "").strip()
 _DEV_SECRET = "dev-only-insecure-key-change-me"
 # SECRET_KEY (unprefixed) is accepted as an alias for DJANGO_SECRET_KEY; the prefixed name wins.
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY") or ("" if PRODUCTION else _DEV_SECRET)
-ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", "" if PRODUCTION else "127.0.0.1,localhost")
+# A pasted URL ("https://host/") instead of a bare host name is a common dashboard mistake; accept it by keeping the host only.
+ALLOWED_HOSTS = [h.split("://", 1)[-1].rstrip("/") for h in _env_list("DJANGO_ALLOWED_HOSTS", "" if PRODUCTION else "127.0.0.1,localhost")]
 # Vercel exposes this deployment's own exact host names (no scheme); they are allowed in addition to the list above.
 # No wildcard such as ".vercel.app" is added: that would accept the host name of any other Vercel site.
 for _name in ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
@@ -98,10 +109,12 @@ for _name in ("VERCEL_URL", "VERCEL_BRANCH_URL", "VERCEL_PROJECT_PRODUCTION_URL"
     if _host and _host not in ALLOWED_HOSTS:
         ALLOWED_HOSTS.append(_host)
 # Comma-separated, scheme included (https://app.example.org): origins allowed to POST to Django's own forms (admin).
-CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS", "")
-CORS_ALLOWED_ORIGINS = _env_list(
-    "CORS_ALLOWED_ORIGINS", "" if PRODUCTION else "http://localhost:3000,http://127.0.0.1:3000"
-)
+# Paths and trailing slashes are stripped (_origin): browsers send Origin without them, so "https://app.example.org/login" would never match.
+CSRF_TRUSTED_ORIGINS = [_origin(o) for o in _env_list("CSRF_TRUSTED_ORIGINS", "")]
+CORS_ALLOWED_ORIGINS = [
+    _origin(o)
+    for o in _env_list("CORS_ALLOWED_ORIGINS", "" if PRODUCTION else "http://localhost:3000,http://127.0.0.1:3000")
+]
 
 if PRODUCTION:
     problems = []

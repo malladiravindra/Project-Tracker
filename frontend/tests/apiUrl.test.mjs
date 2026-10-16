@@ -27,6 +27,12 @@ test("invalid values are rejected", () => {
   assert.throws(() => resolveApiBase("/api", true), /valid absolute URL/);
 });
 
+test("a comma list or embedded whitespace is rejected, not parsed into the path", () => {
+  assert.throws(() => resolveApiBase(`${PROD}/,https://127.0.0.1:8000`, true), /single URL/);
+  assert.throws(() => resolveApiBase(`${PROD},`, true), /single URL/);
+  assert.throws(() => resolveApiBase(`${PROD} https://other.example`, false), /valid absolute URL/);
+});
+
 test("production rejects http and localhost", () => {
   assert.throws(() => resolveApiBase("http://example.com", true), /https/);
   assert.throws(() => resolveApiBase("https://localhost:8000", true), /not localhost/);

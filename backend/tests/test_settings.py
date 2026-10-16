@@ -48,6 +48,14 @@ class ProductionSettingsTests(unittest.TestCase):
         self.assertIn(fragment, result.stderr)
         self.assertNotIn(GOOD_KEY, result.stderr)  # never echo secrets
 
+    def test_pasted_urls_are_normalised_to_exact_origins_and_hosts(self):
+        env = {**PROD, "DJANGO_ALLOWED_HOSTS": "https://tracker.example.org/", "CORS_ALLOWED_ORIGINS": "https://app.example.org/login, https://b.example.org/"}
+        result = load_settings(env)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        s = json.loads(result.stdout)
+        self.assertEqual(s["ALLOWED_HOSTS"], ["tracker.example.org"])
+        self.assertEqual(s["CORS_ALLOWED_ORIGINS"], ["https://app.example.org", "https://b.example.org"])
+
     def test_valid_production_configuration_loads_and_is_hardened(self):
         result = load_settings(PROD)
         self.assertEqual(result.returncode, 0, result.stderr)

@@ -25,6 +25,11 @@ export function resolveApiBase(raw: string | undefined, production: boolean): st
   } catch {
     throw new ApiConfigError(`Configuration error: NEXT_PUBLIC_API_URL is not a valid absolute URL (got "${value}").`);
   }
+  // One origin only: a comma list or stray whitespace would otherwise be parsed as part of the URL path and
+  // every request would go to a non-existent route (this shipped once as "https://api.example.org/,https://127.0.0.1:8000").
+  if (/[,\s]/.test(value)) {
+    throw new ApiConfigError("Configuration error: NEXT_PUBLIC_API_URL must be a single URL with no commas or spaces.");
+  }
   if (url.protocol !== "https:" && url.protocol !== "http:") {
     throw new ApiConfigError("Configuration error: NEXT_PUBLIC_API_URL must start with https:// (or http://).");
   }
