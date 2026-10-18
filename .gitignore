@@ -61,3 +61,6 @@ venv/
 
 # collectstatic output
 /backend/staticfiles/
+
+# local database backups (contain password hashes and personal data)
+/backend/backups/
