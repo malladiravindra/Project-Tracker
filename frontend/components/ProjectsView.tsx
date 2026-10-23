@@ -1345,7 +1345,7 @@ export function ProjectsView({
       )}
       {addingTask && current && (
         <Modal title={`New task for ${current.name}`} onClose={() => setAddingTask(false)} wide>
-          <NewTaskForm defaultProjectId={current.id} onCreated={() => setAddingTask(false)} onCancel={() => setAddingTask(false)} />
+          <NewTaskForm key={current.id} defaultProjectId={current.id} onCreated={() => setAddingTask(false)} onCancel={() => setAddingTask(false)} />
         </Modal>
       )}
     </div>

@@ -656,6 +656,10 @@ export function NewTaskForm({
             id="nt-project"
             value={projectId}
             onChange={(v) => {
+              if (v !== projectId) {
+                setOwner("");
+                edited("owner");
+              }
               setProjectId(v);
               edited("project");
             }}

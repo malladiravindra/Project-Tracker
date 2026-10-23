@@ -10,6 +10,7 @@ import os
 import re
 
 from django.urls import get_resolver
+from rest_framework.test import APIClient
 from rest_framework.views import APIView
 
 from tests.audit_support import RESULTS, AuditCase, key
@@ -72,16 +73,20 @@ class GlobalAudit(AuditCase):
             for m in allowed:
                 self.probe(m, tmpl, "unsupported-method", "other methods -> 405 JSON envelope with Allow header", unsupported)
 
-            # Credentials: the API defines no authentication, so any Authorization header is simply ignored.
+            # Use independent clients: ApiTestCase's default client is force-authenticated.
             probe_method = "GET" if "GET" in allowed else None
             if probe_method:
-                def ignores_credentials(url=url):
-                    anon = self.client.get(f"{API}{url}").status_code
-                    with_header = self.client.get(f"{API}{url}", HTTP_AUTHORIZATION="Bearer not-a-real-token").status_code
-                    self.assertEqual(anon, with_header)
-                    return f"{anon} without credentials; {with_header} with an invalid token"
+                def rejects_credentials(url=url):
+                    anon = APIClient().get(f"{API}{url}")
+                    invalid = APIClient()
+                    invalid.credentials(HTTP_AUTHORIZATION="Bearer invalid-token")
+                    with_header = invalid.get(f"{API}{url}")
+                    self.assertEqual(anon.status_code, 401)
+                    self.assertEqual(with_header.status_code, 401)
+                    self.assertIn("Bearer", anon["WWW-Authenticate"])
+                    return f"{anon.status_code} without credentials; {with_header.status_code} with an invalid token"
 
-                self.probe("GET", tmpl, "authz-open", "OPEN: no authentication/permission classes; credentials neither required nor checked", ignores_credentials)
+                self.probe("GET", tmpl, "authentication", "anonymous and invalid-token requests are rejected", rejects_credentials)
 
     def test_content_types(self):
         targets = [
